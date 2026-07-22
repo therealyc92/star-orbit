@@ -96,16 +96,26 @@ body {
 .my-sign-label {
   font-size: 12px; color: var(--text-muted); letter-spacing: 2px;
 }
-.my-sign-select {
-  appearance: none; background: var(--bg-deep);
+.my-sign-select-wrap {
+  position: relative; min-width: 160px;
+}
+.my-sign-select-display {
+  background: var(--bg-deep);
   color: var(--gold-light); border: 1px solid var(--gold-dim);
   border-radius: var(--radius); padding: 6px 32px 6px 12px;
   font-size: 14px; font-family: var(--font-body); cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23d4b06a'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 10px center;
-  min-width: 160px;
+  transition: border-color 0.2s;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.my-sign-select:focus { outline: none; border-color: var(--gold); }
+.my-sign-select-wrap:focus-within .my-sign-select-display {
+  border-color: var(--gold);
+}
+.my-sign-select-wrap select {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; font-size: 14px;
+}
 .my-sign-clear {
   background: none; border: none; color: var(--text-muted); cursor: pointer;
   font-size: 12px; padding: 4px 8px;
@@ -356,14 +366,24 @@ body {
 .compare-select {
   text-align: center; margin-bottom: 20px;
 }
-.compare-select-inner {
-  appearance: none; background: var(--bg-deep); color: var(--cyan-light);
+.compare-select-inner-wrap {
+  position: relative; display: inline-block;
+}
+.compare-select-display {
+  background: var(--bg-deep); color: var(--cyan-light);
   border: 1px solid var(--cyan-dim); border-radius: var(--radius);
   padding: 6px 32px 6px 12px; font-size: 14px; font-family: var(--font-body); cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234dd0d1'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 10px center;
+  transition: border-color 0.2s;
 }
-.compare-select-inner:focus { outline: none; border-color: var(--cyan); }
+.compare-select-inner-wrap:focus-within .compare-select-display {
+  border-color: var(--cyan);
+}
+.compare-select-inner-wrap select {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; font-size: 14px;
+}
 
 .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .compare-side { }
@@ -441,9 +461,12 @@ body {
   <!-- My Sign Selector -->
   <div class="my-sign-bar">
     <span class="my-sign-label">我的星座</span>
-    <select class="my-sign-select" id="my-sign-select">
-      <option value="">选择星座...</option>
-    </select>
+    <div class="my-sign-select-wrap">
+      <div class="my-sign-select-display" id="my-sign-display">选择星座...</div>
+      <select id="my-sign-select">
+        <option value="">选择星座...</option>
+      </select>
+    </div>
     <button class="my-sign-clear" id="my-sign-clear" style="display:none">清除</button>
   </div>
 
@@ -700,6 +723,7 @@ document.getElementById('daily-overview-detail').textContent = horoscopeData.ove
 
 // Populate selectors
 const mySignSelect = document.getElementById('my-sign-select');
+const mySignDisplay = document.getElementById('my-sign-display');
 signKeys.forEach(key => {
   const s = horoscopeData.signs[key];
   const opt = document.createElement('option');
@@ -707,6 +731,15 @@ signKeys.forEach(key => {
   opt.textContent = `${s.symbol} ${s.name} (${s.dates})`;
   mySignSelect.appendChild(opt);
 });
+
+function syncSignDisplay(key) {
+  if (key && horoscopeData.signs[key]) {
+    const s = horoscopeData.signs[key];
+    mySignDisplay.textContent = `${s.symbol} ${s.name}`;
+  } else {
+    mySignDisplay.textContent = '选择星座...';
+  }
+}
 
 // My sign logic
 const flipArea = document.getElementById('flip-area');
@@ -744,6 +777,7 @@ function renderFlipBack(signData) {
 }
 
 function updateMySignDisplay(key) {
+  syncSignDisplay(key);
   if (key && horoscopeData.signs[key]) {
     flipArea.classList.add('visible');
     flipFlipped = true;
@@ -775,6 +809,7 @@ flipArea.addEventListener('click', () => {
 });
 
 mySignSelect.addEventListener('change', (e) => {
+  syncSignDisplay(e.target.value);
   updateMySignDisplay(e.target.value);
 });
 
@@ -944,6 +979,11 @@ function toggleCompare() {
 document.getElementById('detail-panel').addEventListener('change', function(e) {
   if (e.target.classList.contains('compare-select-inner')) {
     compareSignKey = e.target.value;
+    const display = e.target.parentElement.querySelector('.compare-select-display');
+    if (display) {
+      const cs = horoscopeData.signs[compareSignKey];
+      if (cs) display.textContent = `${cs.symbol} ${cs.name}`;
+    }
     renderDetailPanel();
   }
 });
@@ -1007,13 +1047,15 @@ renderDetailPanel = function() {
     html += `<div class="compare-area visible">
       <div class="compare-header">星座对比</div>`;
     html += `<div class="compare-select">
-      <select class="compare-select-inner">`;
+      <div class="compare-select-inner-wrap">
+        <div class="compare-select-display" data-compare-display>${cs.symbol} ${cs.name}</div>
+        <select class="compare-select-inner">`;
     otherKeys.forEach(k => {
       const optS = horoscopeData.signs[k];
       const sel = (k === compareSignKey) ? ' selected' : '';
       html += `<option value="${k}"${sel}>${optS.symbol} ${optS.name}</option>`;
     });
-    html += `</select></div>`;
+    html += `</select></div></div>`;
 
     html += `<div class="compare-grid">
       <div class="compare-side">
