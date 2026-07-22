@@ -96,31 +96,89 @@ body {
 .my-sign-label {
   font-size: 12px; color: var(--text-muted); letter-spacing: 2px;
 }
-.my-sign-select-wrap {
-  position: relative; min-width: 160px;
-}
-.my-sign-select-display {
-  background: var(--bg-deep);
-  color: var(--gold-light); border: 1px solid var(--gold-dim);
-  border-radius: var(--radius); padding: 6px 32px 6px 12px;
-  font-size: 14px; font-family: var(--font-body); cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23d4b06a'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 10px center;
+.my-sign-trigger {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-deep); border: 1px solid var(--gold-dim);
+  border-radius: var(--radius); padding: 6px 12px;
+  cursor: pointer; min-width: 160px;
   transition: border-color 0.2s;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.my-sign-select-wrap:focus-within .my-sign-select-display {
-  border-color: var(--gold);
+.my-sign-trigger:hover { border-color: var(--gold); }
+.my-sign-trigger-text {
+  color: var(--gold-light); font-size: 14px; flex: 1;
 }
-.my-sign-select-wrap select {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  opacity: 0; cursor: pointer; font-size: 14px;
+.my-sign-trigger-arrow {
+  color: var(--gold-dim); font-size: 9px; transition: transform 0.2s;
 }
+.my-sign-trigger.open .my-sign-trigger-arrow { transform: rotate(180deg); }
 .my-sign-clear {
   background: none; border: none; color: var(--text-muted); cursor: pointer;
   font-size: 12px; padding: 4px 8px;
 }
 .my-sign-clear:hover { color: var(--danger); }
+
+/* Sign Picker Panel */
+.sign-picker-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(8,13,26,0.8); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.sign-picker-overlay.open { display: flex; }
+.sign-picker-panel {
+  background: var(--bg-panel); border: 1px solid var(--gold-dim);
+  border-radius: var(--radius-lg); padding: 28px 24px 20px;
+  max-width: 560px; width: 92%; position: relative;
+}
+.sign-picker-panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.sign-picker-title {
+  text-align: center; font-family: var(--font-display); font-size: 16px;
+  color: var(--gold-light); letter-spacing: 3px; margin-bottom: 20px;
+}
+.sign-picker-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+@media (max-width: 500px) {
+  .sign-picker-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.sign-picker-card {
+  background: var(--bg-card); border: 1px solid rgba(212,176,106,0.12);
+  border-radius: var(--radius); padding: 14px 8px 12px; text-align: center;
+  cursor: pointer; transition: all 0.25s ease; position: relative;
+  overflow: hidden;
+}
+.sign-picker-card:hover {
+  border-color: var(--gold);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(212,176,106,0.08);
+}
+.sign-picker-card.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(212,176,106,0.15);
+}
+.sign-picker-card.selected::after {
+  content: '✓'; position: absolute; top: 4px; right: 8px;
+  font-size: 10px; color: var(--gold); opacity: 0.7;
+}
+.sign-picker-card-symbol { font-size: 30px; margin-bottom: 4px; }
+.sign-picker-card-name {
+  font-size: 13px; color: var(--gold-light); letter-spacing: 1px;
+}
+.sign-picker-card-en {
+  font-size: 10px; color: var(--text-muted); letter-spacing: 0.5px;
+  margin-top: 2px; text-transform: capitalize;
+}
+.sign-picker-close {
+  display: block; margin: 20px auto 0;
+  background: transparent; border: 1px solid var(--gold-dim);
+  color: var(--gold); padding: 6px 24px; border-radius: var(--radius);
+  font-size: 13px; cursor: pointer; font-family: var(--font-body);
+  transition: all 0.2s;
+}
+.sign-picker-close:hover { border-color: var(--gold); background: rgba(212,176,106,0.06); }
 
 /* Flip Card Area */
 .flip-area {
@@ -461,13 +519,20 @@ body {
   <!-- My Sign Selector -->
   <div class="my-sign-bar">
     <span class="my-sign-label">我的星座</span>
-    <div class="my-sign-select-wrap">
-      <div class="my-sign-select-display" id="my-sign-display">选择星座...</div>
-      <select id="my-sign-select">
-        <option value="">选择星座...</option>
-      </select>
+    <div class="my-sign-trigger" id="my-sign-trigger">
+      <span class="my-sign-trigger-text" id="my-sign-display">选择星座...</span>
+      <span class="my-sign-trigger-arrow">▼</span>
     </div>
     <button class="my-sign-clear" id="my-sign-clear" style="display:none">清除</button>
+  </div>
+
+  <!-- Sign Picker Panel -->
+  <div class="sign-picker-overlay" id="sign-picker">
+    <div class="sign-picker-panel">
+      <div class="sign-picker-title">选择你的星座</div>
+      <div class="sign-picker-grid" id="sign-picker-grid"></div>
+      <button class="sign-picker-close" id="sign-picker-close">关闭</button>
+    </div>
   </div>
 
   <!-- Flip Card -->
@@ -721,15 +786,71 @@ document.getElementById('date-display').textContent = '2026年7月22日 · 星�
 document.getElementById('overview-text').textContent = horoscopeData.overview;
 document.getElementById('daily-overview-detail').textContent = horoscopeData.overview;
 
-// Populate selectors
-const mySignSelect = document.getElementById('my-sign-select');
+// Sign Picker
+const signPicker = document.getElementById('sign-picker');
+const signPickerGrid = document.getElementById('sign-picker-grid');
+const mySignTrigger = document.getElementById('my-sign-trigger');
 const mySignDisplay = document.getElementById('my-sign-display');
-signKeys.forEach(key => {
-  const s = horoscopeData.signs[key];
-  const opt = document.createElement('option');
-  opt.value = key;
-  opt.textContent = `${s.symbol} ${s.name} (${s.dates})`;
-  mySignSelect.appendChild(opt);
+const mySignClear = document.getElementById('my-sign-clear');
+let mySign = localStorage.getItem('horoscope_my_sign') || '';
+let flipFlipped = false;
+
+const signNamesEn = {
+  aries:'Aries', taurus:'Taurus', gemini:'Gemini', cancer:'Cancer',
+  leo:'Leo', virgo:'Virgo', libra:'Libra', scorpio:'Scorpio',
+  sagittarius:'Sagittarius', capricorn:'Capricorn', aquarius:'Aquarius', pisces:'Pisces'
+};
+
+function buildSignPicker() {
+  let html = '';
+  signKeys.forEach(key => {
+    const s = horoscopeData.signs[key];
+    const sel = (key === mySign) ? ' selected' : '';
+    html += `<div class="sign-picker-card${sel}" data-sign="${key}">
+      <div class="sign-picker-card-symbol">${s.symbol}</div>
+      <div class="sign-picker-card-name">${s.name}</div>
+      <div class="sign-picker-card-en">${signNamesEn[key]}</div>
+    </div>`;
+  });
+  signPickerGrid.innerHTML = html;
+}
+
+function openSignPicker() {
+  buildSignPicker();
+  signPicker.classList.add('open');
+  mySignTrigger.classList.add('open');
+}
+
+function closeSignPicker() {
+  signPicker.classList.remove('open');
+  mySignTrigger.classList.remove('open');
+}
+
+mySignTrigger.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (signPicker.classList.contains('open')) {
+    closeSignPicker();
+  } else {
+    openSignPicker();
+  }
+});
+
+signPicker.addEventListener('click', function(e) {
+  const card = e.target.closest('.sign-picker-card');
+  if (card) {
+    const key = card.dataset.sign;
+    updateMySignDisplay(key);
+    closeSignPicker();
+  }
+  if (e.target.id === 'sign-picker-close' || e.target === signPicker) {
+    closeSignPicker();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && signPicker.classList.contains('open')) {
+    closeSignPicker();
+  }
 });
 
 function syncSignDisplay(key) {
@@ -741,13 +862,10 @@ function syncSignDisplay(key) {
   }
 }
 
-// My sign logic
+// Flip card & my sign logic
 const flipArea = document.getElementById('flip-area');
 const flipInner = document.getElementById('flip-inner');
 const flipBackContent = document.getElementById('flip-back-content');
-const mySignClear = document.getElementById('my-sign-clear');
-let mySign = localStorage.getItem('horoscope_my_sign') || '';
-let flipFlipped = false;
 
 function renderFlipBack(signData) {
   const d = signData;
@@ -783,7 +901,6 @@ function updateMySignDisplay(key) {
     flipFlipped = true;
     flipInner.classList.add('flipped');
     flipBackContent.innerHTML = renderFlipBack(horoscopeData.signs[key]);
-    mySignSelect.value = key;
     mySignClear.style.display = 'inline-block';
     localStorage.setItem('horoscope_my_sign', key);
     mySign = key;
@@ -791,7 +908,6 @@ function updateMySignDisplay(key) {
     flipArea.classList.remove('visible');
     flipFlipped = false;
     flipInner.classList.remove('flipped');
-    mySignSelect.value = '';
     mySignClear.style.display = 'none';
     localStorage.removeItem('horoscope_my_sign');
     mySign = '';
@@ -806,11 +922,6 @@ flipArea.addEventListener('click', () => {
   } else {
     flipInner.classList.remove('flipped');
   }
-});
-
-mySignSelect.addEventListener('change', (e) => {
-  syncSignDisplay(e.target.value);
-  updateMySignDisplay(e.target.value);
 });
 
 mySignClear.addEventListener('click', (e) => {
