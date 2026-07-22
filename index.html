@@ -792,7 +792,15 @@ const signPickerGrid = document.getElementById('sign-picker-grid');
 const mySignTrigger = document.getElementById('my-sign-trigger');
 const mySignDisplay = document.getElementById('my-sign-display');
 const mySignClear = document.getElementById('my-sign-clear');
-let mySign = localStorage.getItem('horoscope_my_sign') || '';
+// Safe storage: fall back to in-memory when localStorage is blocked (sandboxed preview)
+const memoryStore = {};
+const storage = {
+  get(key) { try { return localStorage.getItem(key); } catch (e) { return memoryStore[key] ?? null; } },
+  set(key, val) { try { localStorage.setItem(key, val); } catch (e) { memoryStore[key] = val; } },
+  remove(key) { try { localStorage.removeItem(key); } catch (e) { delete memoryStore[key]; } }
+};
+
+let mySign = storage.get('horoscope_my_sign') || '';
 let flipFlipped = false;
 
 const signNamesEn = {
@@ -902,14 +910,14 @@ function updateMySignDisplay(key) {
     flipInner.classList.add('flipped');
     flipBackContent.innerHTML = renderFlipBack(horoscopeData.signs[key]);
     mySignClear.style.display = 'inline-block';
-    localStorage.setItem('horoscope_my_sign', key);
+    storage.set('horoscope_my_sign', key);
     mySign = key;
   } else {
     flipArea.classList.remove('visible');
     flipFlipped = false;
     flipInner.classList.remove('flipped');
     mySignClear.style.display = 'none';
-    localStorage.removeItem('horoscope_my_sign');
+    storage.remove('horoscope_my_sign');
     mySign = '';
   }
   renderZodiacGrid();
@@ -1213,6 +1221,10 @@ renderDetailPanel = function() {
 function renderRadarChart() {
   const canvas = document.getElementById('radar-chart');
   if (!canvas || !detailSignKey || !compareSignKey) return;
+  if (typeof Chart === 'undefined') {
+    canvas.outerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:20px;">雷达图加载失败（外部图表库不可用），请参考上方评分条对比。</div>';
+    return;
+  }
 
   const s1 = horoscopeData.signs[detailSignKey];
   const s2 = horoscopeData.signs[compareSignKey];
