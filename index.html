@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>星轨运势 · 每日星座</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1K4VB2CWQW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-1K4VB2CWQW');
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
@@ -800,6 +807,13 @@ const storage = {
   remove(key) { try { localStorage.removeItem(key); } catch (e) { delete memoryStore[key]; } }
 };
 
+// Safe analytics: no-op when gtag is unavailable (ad-blocker / sandbox)
+function trackEvent(name, params) {
+  try {
+    if (typeof gtag === 'function') gtag('event', name, params || {});
+  } catch (e) { /* tracking must never break the app */ }
+}
+
 let mySign = storage.get('horoscope_my_sign') || '';
 let flipFlipped = false;
 
@@ -847,6 +861,7 @@ signPicker.addEventListener('click', function(e) {
   const card = e.target.closest('.sign-picker-card');
   if (card) {
     const key = card.dataset.sign;
+    trackEvent('select_sign', { sign: key, sign_name: horoscopeData.signs[key].name });
     updateMySignDisplay(key);
     closeSignPicker();
   }
@@ -925,6 +940,7 @@ function updateMySignDisplay(key) {
 
 flipArea.addEventListener('click', () => {
   flipFlipped = !flipFlipped;
+  trackEvent('flip_card', { action: flipFlipped ? 'reveal' : 'hide', sign: mySign });
   if (flipFlipped) {
     flipInner.classList.add('flipped');
   } else {
@@ -934,6 +950,7 @@ flipArea.addEventListener('click', () => {
 
 mySignClear.addEventListener('click', (e) => {
   e.stopPropagation();
+  trackEvent('clear_sign', { sign: mySign });
   updateMySignDisplay('');
 });
 
@@ -974,6 +991,7 @@ let compareSignKey = null;
 function openDetail(key) {
   detailSignKey = key;
   compareSignKey = null;
+  trackEvent('view_detail', { sign: key, sign_name: horoscopeData.signs[key].name });
   renderDetailPanel();
   document.getElementById('detail-overlay').classList.add('open');
 }
@@ -1084,12 +1102,14 @@ function renderDetailPanel() {
 
 function toggleCompare() {
   if (compareSignKey) {
+    trackEvent('compare_end', { base_sign: detailSignKey, compare_sign: compareSignKey });
     compareSignKey = null;
     renderDetailPanel();
   } else {
     const otherKeys = signKeys.filter(k => k !== detailSignKey);
     if (otherKeys.length === 0) return;
     compareSignKey = otherKeys[0];
+    trackEvent('compare_start', { base_sign: detailSignKey, compare_sign: compareSignKey });
     renderDetailPanel();
   }
 }
@@ -1098,6 +1118,7 @@ function toggleCompare() {
 document.getElementById('detail-panel').addEventListener('change', function(e) {
   if (e.target.classList.contains('compare-select-inner')) {
     compareSignKey = e.target.value;
+    trackEvent('compare_switch', { base_sign: detailSignKey, compare_sign: compareSignKey });
     const display = e.target.parentElement.querySelector('.compare-select-display');
     if (display) {
       const cs = horoscopeData.signs[compareSignKey];
