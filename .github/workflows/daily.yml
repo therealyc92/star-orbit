@@ -1,0 +1,36 @@
+name: Daily Horoscope
+
+# 每天北京时间 00:05（UTC 16:05）生成当日运势数据并提交。
+# 也可在 Actions 页面手动触发（workflow_dispatch）。
+on:
+  schedule:
+    - cron: '5 16 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate today's data
+        run: node scripts/generate.js
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "no changes"
+          else
+            git commit -m "chore: daily horoscope data"
+            git push
+          fi

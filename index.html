@@ -577,122 +577,14 @@ body {
   <div class="detail-panel" id="detail-panel"></div>
 </div>
 
+<script src="generator.js"></script>
 <script>
-/* ===== DATA ===== */
-const horoscopeData = {
-  date: "2026-07-22",
-  overview: "太阳行至巨蟹宫末段，与土星形成柔和三分相。今日情绪微妙，内在世界与外部现实之间的张力需要调和。适合审视个人边界，在坚持与妥协之间找到平衡。",
-  signs: {
-    aries: {
-      name: "白羊座", symbol: "♈", element: "火", dates: "3.21-4.19",
-      overall: { score: 4, summary: "火星赋予行动力，直觉锐利", detail: "今天的你像一支离弦的箭，目标明确，充满冲劲。适合做决定，不适合犹豫。小心不自觉地越过他人的边界——并非所有的直率都被欣赏。" },
-      career: { score: 4, summary: "推进项目的关键节点", detail: "能力被看见的一天。你提出的方案大概率会被认可，但记得留一丝柔和的余地给持不同意见的同事。主动出击，但不咄咄逼人。" },
-      wealth: { score: 3, summary: "小额支出频繁，注意记账", detail: "收入稳定但支出略多，冲动消费是今天的隐患。推迟非必要的购买决定，尤其是数码产品和快时尚。有一笔迟来的款项可能到账。" },
-      love: { score: 5, summary: "魅力高涨，主动有惊喜", detail: "单身者今天的气场很有吸引力，适合大方展示自己。有伴的人一个真诚的举动比精心策划的惊喜更有用。身体语言比言语更动人。" },
-      health: { score: 3, summary: "精力充沛但容易透支", detail: "能量满格，但别高估自己的续航。下午可能出现疲劳突袭，安排一个短暂的休息窗口。多喝水，少咖啡。" },
-      luckyColor: "赤橙", luckyNumber: 7
-    },
-    taurus: {
-      name: "金牛座", symbol: "♉", element: "土", dates: "4.20-5.20",
-      overall: { score: 5, summary: "金星护佑，节奏舒适且充实", detail: "今天是你能量的舒适区，一步一个脚印地推进日常事务会带来深层满足感。不急不躁，反而走得更远。他人可能催促，但你知道自己的节奏。" },
-      career: { score: 4, summary: "稳扎稳打，成果可期", detail: "手头的项目不需要急转弯，按计划推进就对了。适合做复盘和数据整理的工作。你的耐心是被低估的优势——今天有人会因此对你刮目相看。" },
-      wealth: { score: 5, summary: "意料之外的财务好消息", detail: "财运上扬。可能有之前遗忘的报销到账、退款入账，或一笔小的奖励。也适合审视长期理财计划，做出的调整会在未来几个月看到回报。" },
-      love: { score: 4, summary: "稳定中需要一点新鲜感", detail: "关系扎实但可能稍显沉闷。单身者可以通过共同爱好结识新人。有伴的人一个微小的仪式感——比如换个散步路线——就能打破日常的惯性。" },
-      health: { score: 4, summary: "身体状态良好，注意饮食", detail: "整体不错的一天。胃口好，但要留意消化——今天的肠胃比你想象中敏感。晚餐少油腻，优先选择温热的食物。" },
-      luckyColor: "墨绿", luckyNumber: 2
-    },
-    gemini: {
-      name: "双子座", symbol: "♊", element: "风", dates: "5.21-6.21",
-      overall: { score: 3, summary: "水星逆行阴影未散，信息过载", detail: "今天你的脑子像同时开了十个网页，想法和选择太多反而造成消耗。优先筛选信息源，关掉三个窗口再处理重要的事。独处十分钟胜过十段聊天。" },
-      career: { score: 3, summary: "方向分散，聚焦才有产出", detail: "手头可能有多个任务在拉扯你的注意力。今天不适合多线并行——选一件最重要的事做完，给自己一个确定的成就。会议中少说多听。" },
-      wealth: { score: 3, summary: "波动不大，警惕冲动购物", detail: "有小金额的社交消费——请客、拼单——但整体在预算内。今天的财务课题不是赚钱，而是别为了短暂的情绪波动打开购物App。" },
-      love: { score: 4, summary: "有趣对话带来意外连接", detail: "你的风趣和好奇心今天自带社交光环。一段不经意的对话可能打开新的窗口。有伴的人适合聊点轻松话题，别把工作压力带入两个人的空间。" },
-      health: { score: 3, summary: "精神消耗大于体力", detail: "头脑的疲劳比身体更明显。信息摄入需要有意识节制：少刷手机，多闭眼。睡前半小时远离屏幕，会直接影响明天的状态。" },
-      luckyColor: "浅银", luckyNumber: 5
-    },
-    cancer: {
-      name: "巨蟹座", symbol: "♋", element: "水", dates: "6.22-7.22",
-      overall: { score: 4, summary: "月亮回归本宫，情绪感知敏锐", detail: "今天是你的主场。直觉比逻辑更准确，信赖它。但也因为感受力太强，别人的情绪容易沾染你——建立临时的情绪边界是今天的必修课。" },
-      career: { score: 4, summary: "人际关系是今天的关键变量", detail: "工作推进顺利，但真正决定成果质量的是你与关键人的沟通方式。一个共情的回应比一个完美的方案更有价值。下午适合独立完成需要专注的任务。" },
-      wealth: { score: 3, summary: "家庭或装修相关支出需关注", detail: "可能有家用、居住环境相关的支出浮现。建议做一次预算审视——不一定要现在决定，但心里有数。别让情绪驱动大额消费。" },
-      love: { score: 4, summary: "深情而温柔，容易被看见", detail: "你今天的温柔是强大的，而不是软弱的。单身者在日常场景中（咖啡店、书店、下班路上）可能出现微妙连接。有伴的人一个拥抱胜过千言万语。" },
-      health: { score: 4, summary: "情绪与身体的连接清晰", detail: "身体状态与情绪高度关联。胃和胸口是今天情绪承载的地方——如有不适，觉察一下是否在压抑什么。温暖的热饮和简单的拉伸会帮到你。" },
-      luckyColor: "珍珠白", luckyNumber: 4
-    },
-    leo: {
-      name: "狮子座", symbol: "♌", element: "火", dates: "7.23-8.22",
-      overall: { score: 4, summary: "太阳在狮子座边缘蓄势，气场渐强", detail: "自信是你的优势，但今天的不安全感来自“他人是否认可”。别把评价权交出去。你做好自己的事，掌声会自己追过来。" },
-      career: { score: 5, summary: "创造力爆发，抓住表现机会", detail: "今天是你的舞台。一个临场发言、一次即兴展示都可以成为高光时刻。别过度准备——你的临场直觉就是最好的武器。大胆说出想法。" },
-      wealth: { score: 3, summary: "维持稳定，避免高风险操作", detail: "财富面平静。有小笔意外支出（礼物、请客），但不会造成实质影响。投资方面今天不宜做新决策——按兵不动也是策略。" },
-      love: { score: 4, summary: "热情如火，但要给对方面子", detail: "你的热情是魅力，但今天的互动中小心“赢”字太重。有些对话不是为了分出对错。单身者可能在工作或社群场合遇到欣赏你的人。" },
-      health: { score: 4, summary: "精力旺盛，注意心脏负荷", detail: "状态在线。心率偏高时留意压力水平——今天的激情也需要适时冷却。傍晚散步，或听一首慢歌。" },
-      luckyColor: "金色", luckyNumber: 1
-    },
-    virgo: {
-      name: "处女座", symbol: "♍", element: "土", dates: "8.23-9.22",
-      overall: { score: 4, summary: "水星赋予分析力，务实带来回报", detail: "今天适合把一团乱麻理顺。你的逻辑和细心是被低估的超能力。但别陷入“追求完美→无限拖延”的怪圈——80%就够了，剩下的20%可以明天。" },
-      career: { score: 4, summary: "适合复盘和整理", detail: "把散落的文档归档、把凌乱的流程理顺、把模糊的沟通明确。你今天在细节中的价值会被看见。有些人会把你的沉默误解为疏远，稍微解释一下。" },
-      wealth: { score: 4, summary: "精打细算有回报", detail: "之前的一笔精打细算可能显现价值。也适合重新审视订阅服务、自动扣款等隐性支出。做个简单的表格梳理，你会找到可观的优化空间。" },
-      love: { score: 3, summary: "过度的分析影响感性体验", detail: "你在情感中的谨慎是保护机制，但今天试着放下一点分析——不是所有感觉都需要被解释。有伴的人注意别把“关心”表达成“批评”。" },
-      health: { score: 4, summary: "规律作息最佳良药", detail: "消化系统和皮肤是今天关注的重点。规律的三餐胜过任何营养补剂。小洁癖和整理欲有助于心理健康——整理一个抽屉也是仪式。" },
-      luckyColor: "浅灰", luckyNumber: 8
-    },
-    libra: {
-      name: "天秤座", symbol: "♎", element: "风", dates: "9.23-10.23",
-      overall: { score: 3, summary: "金星刑克，平衡感暂时失准", detail: "今天你可能会在几个选项之间反复横跳。暂停不是拖延，是给自己一个清明的机会。他人的意见可以听，但最终想清楚：这是谁的人生。" },
-      career: { score: 3, summary: "协调任务繁杂，耐心是关键", detail: "你可能是团队中的“关系调节器”，但别把自己调到没电。今天有一件与他人合作的事可能出现摩擦——保持中立、聚焦目标而非情绪。" },
-      wealth: { score: 3, summary: "平账日，别做大决定", detail: "财务状况平稳但暗流涌动。今天不适合签合同、做长期承诺或大额消费。如果有人在催你决定，给自己争取至少24小时的缓冲。" },
-      love: { score: 4, summary: "温柔但有力量，吸引对的人", detail: "你今天有一种“不说破但让人舒服”的魅力。单身者的直觉今天格外准确，跟随它做出社交选择。有伴的人适合一起看一部电影或听一场歌单。" },
-      health: { score: 3, summary: "腰背和肩颈需关注", detail: "久坐导致的不适可能比平时更明显。站起来走动五分钟，做几个简单的肩颈拉伸。下背部的不适也与压力直接相关——身体的答案有时比头脑更诚实。" },
-      luckyColor: "藕粉", luckyNumber: 6
-    },
-    scorpio: {
-      name: "天蝎座", symbol: "♏", element: "水", dates: "10.24-11.22",
-      overall: { score: 4, summary: "冥王能量深沉，洞察力直达本质", detail: "今天你有一种“看穿表象”的能力。在别人还纠结表面现象时，你已经摸到了本质。这种深度是礼物，但也可能让你显得有些疏离——适当分享你的思考过程。" },
-      career: { score: 5, summary: "隐藏的机会浮出水面", detail: "一个你关注已久的项目或机会可能今天展露关键信息。你的准备工作不会白做——机会是给那些在暗处默默努力的人的。保持警觉，果断出手。" },
-      wealth: { score: 4, summary: "偏财运走高，但需理性判断", detail: "今天可能有被动收入或投资回报的好消息。但别因此扩大风险敞口——直觉可以引导你，但数字才是最终的裁判。小额尝试可以，重仓需要再等等。" },
-      love: { score: 4, summary: "深度连接比表面热闹重要", detail: "你不需要很多人懂你，一个就够了。今天的感情主题是“深度”——一场认真对话胜过十次社交寒暄。有伴的人可能触达关系中一个更深的话题。" },
-      health: { score: 3, summary: "神经系统需要放松", detail: "你的神经系统今天比较敏感。不是身体的问题，是思维停不下来的影响。试试呼吸练习或简单的冥想——你可能对“身心练习”有天然的抵触，但今天值得一试。" },
-      luckyColor: "深紫", luckyNumber: 9
-    },
-    sagittarius: {
-      name: "射手座", symbol: "♐", element: "火", dates: "11.23-12.21",
-      overall: { score: 4, summary: "木星加持，乐观是今天的底盘", detail: "你天然的那种“凡事往好处看”的能力在今天格外管用。但你也要注意：不是所有人都跟得上你的节奏。慢下来不是妥协，是照顾他人的速度。" },
-      career: { score: 3, summary: "整体向好，细节待补", detail: "大局展望很清晰，但一些小的执行层面需要脚踏实地。如果今天需要做汇报或提交材料，多花十分钟检查细节——它能让“好”变成“出色”。" },
-      wealth: { score: 3, summary: "旅行或教育支出浮现", detail: "可能有未来出行或学习相关的花费计划浮现。今天适合做初步调研和比价，但不适合立即付款。让兴奋的情绪沉淀一晚再做决定。" },
-      love: { score: 5, summary: "自由的灵魂最吸引人", detail: "你的坦率和热情在今天极具感染力。单身者可能在不经意的场合吸引到有趣的人——别端着，做你自己就是最好的策略。有伴的人一起做个“冒险”的小计划。" },
-      health: { score: 4, summary: "户外活动是今天的良药", detail: "身体需要动起来。久坐或室内氛围会让你逐渐焦躁。哪怕只是午休走一圈，或者下班后骑车回家——让身体释放一些动能。" },
-      luckyColor: "亮蓝", luckyNumber: 3
-    },
-    capricorn: {
-      name: "摩羯座", symbol: "♑", element: "土", dates: "12.22-1.19",
-      overall: { score: 4, summary: "土星稳坐，耐心结出果实", detail: "你不是走得最快的，但你走得很稳。今天可能看到一个长期努力的初步成果——不大，但足够给你信心。继续保持，你的方法论没有问题。" },
-      career: { score: 4, summary: "按计划推进，别被焦虑带偏", detail: "工作任务按节奏来，不慌不忙。可能有同事或上级的紧迫感影响你——提醒自己：急躁的出错的代价更高。掌控你能掌控的，其余的顺其自然。" },
-      wealth: { score: 4, summary: "储蓄和积累见成效", detail: "之前坚持的储蓄或投资习惯开始显现价值。今天适合审视一下你的长期财务结构——你可能会发现比预期好一点的数字。稳健是你最大的财富策略。" },
-      love: { score: 3, summary: "情感表达需要“翻译”", detail: "你在意，但你的表达方式对某些人来说可能过于内敛。今天试着多一个微笑、一句肯定、一个小动作——对在意的人来说，“看到”比“知道”更重要。" },
-      health: { score: 4, summary: "骨骼和关节保驾护航", detail: "注意坐姿和站立姿势。膝盖和脊柱是今天身体的薄弱环节。如果可以，尝试一次有针对性的拉伸或瑜伽。你的身体像一台精密仪器——值得细致维护。" },
-      luckyColor: "深棕", luckyNumber: 10
-    },
-    aquarius: {
-      name: "水瓶座", symbol: "♒", element: "风", dates: "1.20-2.18",
-      overall: { score: 5, summary: "天王星激活创造力，想法不同寻常", detail: "今天你的大脑像一个接通了外太空的天线，冒出旁人想不到的点子。这是你的优势日——那些“奇怪”的想法不是bug，是feature。但也要接地气。" },
-      career: { score: 5, summary: "创新方案可能一鸣惊人", detail: "今天适合提出那些你一直憋着的“不按常理”的方案。即使只被部分采纳，也能改变一件事的走向。注意沟通方式——好想法也需要好包装。" },
-      wealth: { score: 3, summary: "科技或新体验消费需评估", detail: "可能有对新设备、软件或数字化服务的消费冲动。今天不是FOMO（错失恐惧）下单的日子——列一个清单，过三天再回头看哪些是真正需要的。" },
-      love: { score: 4, summary: "智商吸引代替荷尔蒙", detail: "你今天的情感吸引力来自于思想而非外表。一场有深度的对话、一个有趣的观点，可能成为连接的起点。有伴的人一起讨论一个长远计划。" },
-      health: { score: 3, summary: "神经系统高负荷运转", detail: "大脑活跃是好，但也意味着今日的疲惫是精神层面的。强制切换频道——听纯音乐、发呆、或整理一些不费脑的事。血液循环需要走动来激活。" },
-      luckyColor: "电光蓝", luckyNumber: 11
-    },
-    pisces: {
-      name: "双鱼座", symbol: "♓", element: "水", dates: "2.19-3.20",
-      overall: { score: 3, summary: "海王相位朦胧，灵感与迷茫并存", detail: "今天你像站在一片雾中，能隐约感知远处的光，但脚下的路不太清晰。这不是坏事——有些问题的答案不靠逻辑，靠等待。创作和疗愈是今天的出口。" },
-      career: { score: 3, summary: "感性主导，需辅助理性检查", detail: "你的直觉在工作中有价值，但今天需要额外一层的理性验证。做决定前找一个“地像星座”式的同事帮着检查，或者给自己设个检查清单。" },
-      wealth: { score: 2, summary: "守护钱包，避免错觉消费", detail: "今天容易被虚幻的价值主张吸引——那些“看起来很划算”或“以后会用到”的东西大概率不会。把钱花在提升身心体验的事上（如按摩、好食材），而非堆在购物车里。" },
-      love: { score: 5, summary: "浪漫是本能，但别戴上滤镜", detail: "你今天的浪漫感受力爆棚，一首歌、一句话都能让人心动。单身者小心把想象投射到现实中——先看清对方是谁。有伴的人一场温柔的陪伴就是最好的礼物。" },
-      health: { score: 3, summary: "情绪波动影响睡眠", detail: "今天睡前思绪可能比较多。建立一个简单的小仪式——写三件今天感恩的事，或听一段固定的白噪音——帮助大脑知道“现在该关了”。充足的睡眠是对抗一切不安的基础。" },
-      luckyColor: "海蓝", luckyNumber: 12
-    }
-  }
-};
+/* ===== DATA LOADING =====
+ * 数据源优先级：
+ * 1) data/YYYY-MM-DD.js 当日精修数据（window.HOROSCOPE_OVERRIDE）
+ * 2) generator.js 以日期为种子现场生成（保证每天都有内容）
+ */
+let horoscopeData = null;
 
 /* ===== STARS BACKGROUND ===== */
 (function() {
@@ -788,10 +680,6 @@ function getSignEmoji(sign) {
   return sign.symbol || '';
 }
 
-// Init date
-document.getElementById('date-display').textContent = '2026年7月22日 · 星期三';
-document.getElementById('overview-text').textContent = horoscopeData.overview;
-document.getElementById('daily-overview-detail').textContent = horoscopeData.overview;
 
 // Sign Picker
 const signPicker = document.getElementById('sign-picker');
@@ -977,12 +865,41 @@ function renderZodiacGrid() {
   grid.innerHTML = html;
 }
 
-// Init
-if (mySign) {
-  updateMySignDisplay(mySign);
-} else {
-  renderZodiacGrid();
+// Init: 动态日期 + 按日期加载数据（精修数据优先，生成器兜底）
+function pad2(n) { return String(n).padStart(2, '0'); }
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
 }
+const WEEKDAYS_CN = ['日', '一', '二', '三', '四', '五', '六'];
+function todayDisplay() {
+  const d = new Date();
+  return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 · 星期' + WEEKDAYS_CN[d.getDay()];
+}
+
+function initApp(data) {
+  horoscopeData = data;
+  document.getElementById('date-display').textContent = todayDisplay();
+  document.getElementById('overview-text').textContent = data.overview;
+  document.getElementById('daily-overview-detail').textContent = data.overview;
+  if (mySign) {
+    updateMySignDisplay(mySign);
+  } else {
+    renderZodiacGrid();
+  }
+}
+
+(function loadDaily() {
+  const ds = todayStr();
+  const fallback = () => initApp(HoroscopeGenerator.generateDaily(ds));
+  const s = document.createElement('script');
+  s.src = 'data/' + ds + '.js';
+  s.onload = () => { window.HOROSCOPE_OVERRIDE ? initApp(window.HOROSCOPE_OVERRIDE) : fallback(); };
+  s.onerror = fallback;
+  document.head.appendChild(s);
+  // 页面彻夜未关时，跨日自动刷新获取新运势
+  setInterval(() => { if (todayStr() !== ds) location.reload(); }, 60000);
+})();
 
 /* ===== Detail Panel ===== */
 let detailSignKey = null;
