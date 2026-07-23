@@ -14,24 +14,24 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg-deep: #080d1a;
-  --bg-panel: #101830;
-  --bg-card: #151e3a;
-  --bg-card-hover: #1b2548;
-  --gold: #d4b06a;
-  --gold-light: #e8cc88;
-  --gold-dim: #8a6d3b;
-  --cyan: #4dd0d1;
-  --cyan-light: #7fe8e8;
-  --cyan-dim: #2a7070;
-  --purple: #8b7ed4;
-  --purple-light: #b4a8f0;
-  --purple-dim: #4a3f80;
-  --text-primary: #e4dfd0;
-  --text-secondary: #9a968a;
-  --text-muted: #5e5b50;
-  --danger: #e05252;
-  --danger-dim: #5e2a2a;
+  --bg-deep: #0d021a;
+  --bg-panel: #170530;
+  --bg-card: #210a45;
+  --bg-card-hover: #2b0f57;
+  --gold: #ff71ce;
+  --gold-light: #ffa3e0;
+  --gold-dim: #a33f8e;
+  --cyan: #01cdfe;
+  --cyan-light: #8ef4ff;
+  --cyan-dim: #1b9ec4;
+  --purple: #b967ff;
+  --purple-light: #d3a4ff;
+  --purple-dim: #5e2a9e;
+  --text-primary: #f3e9ff;
+  --text-secondary: #b9a3e3;
+  --text-muted: #7a639e;
+  --danger: #ff5e78;
+  --danger-dim: #6e2438;
   --font-display: 'Georgia', 'Times New Roman', serif;
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --radius-sm: 2px;
@@ -56,6 +56,13 @@ body {
   pointer-events: none; z-index: 0;
 }
 
+/* CRT scanlines（蒸汽波） */
+body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 3;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.14) 0px, rgba(0,0,0,0.14) 1px, transparent 1px, transparent 3px);
+  opacity: 0.55;
+}
+
 .container {
   position: relative; z-index: 1;
   max-width: 1200px; margin: 0 auto; padding: 20px 24px 60px;
@@ -74,7 +81,7 @@ body {
 .header-title {
   font-family: var(--font-display); font-size: 32px; font-weight: normal;
   color: var(--gold-light); letter-spacing: 6px;
-  text-shadow: 0 0 40px rgba(212, 176, 106, 0.3);
+  text-shadow: 0 0 12px rgba(255,113,206,0.75), 0 0 35px rgba(255,113,206,0.45), 0 0 70px rgba(185,103,255,0.35);
 }
 .header-date {
   margin-top: 8px; font-size: 13px; color: var(--text-muted); letter-spacing: 2px;
@@ -168,7 +175,7 @@ body {
   .sign-picker-grid { grid-template-columns: repeat(3, 1fr); }
 }
 .sign-picker-card {
-  background: var(--bg-card); border: 1px solid rgba(212,176,106,0.12);
+  background: var(--bg-card); border: 1px solid rgba(255,113,206,0.12);
   border-radius: var(--radius); padding: 14px 8px 12px; text-align: center;
   cursor: pointer; transition: all 0.25s ease; position: relative;
   overflow: hidden;
@@ -177,11 +184,11 @@ body {
   border-color: var(--gold);
   background: var(--bg-card-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(212,176,106,0.08);
+  box-shadow: 0 4px 16px rgba(255,113,206,0.08);
 }
 .sign-picker-card.selected {
   border-color: var(--gold);
-  box-shadow: 0 0 12px rgba(212,176,106,0.15);
+  box-shadow: 0 0 12px rgba(255,113,206,0.15);
 }
 .sign-picker-card.selected::after {
   content: '✓'; position: absolute; top: 4px; right: 8px;
@@ -202,7 +209,7 @@ body {
   font-size: 13px; cursor: pointer; font-family: var(--font-body);
   transition: all 0.2s;
 }
-.sign-picker-close:hover { border-color: var(--gold); background: rgba(212,176,106,0.06); }
+.sign-picker-close:hover { border-color: var(--gold); background: rgba(255,113,206,0.06); }
 
 /* Flip Card Area */
 .flip-area {
@@ -224,7 +231,7 @@ body {
 .flip-front {
   background: var(--bg-card); border: 2px solid var(--gold-dim);
   background-image:
-    radial-gradient(ellipse at center, rgba(212,176,106,0.08) 0%, transparent 70%);
+    radial-gradient(ellipse at center, rgba(255,113,206,0.08) 0%, transparent 70%);
 }
 .flip-front .card-pattern {
   width: 140px; height: 200px;
@@ -249,9 +256,9 @@ body {
   background: var(--bg-card); border: 2px solid var(--gold);
   transform: rotateY(180deg);
   background-image:
-    linear-gradient(180deg, rgba(212,176,106,0.06) 0%, transparent 50%, rgba(212,176,106,0.06) 100%);
+    linear-gradient(180deg, rgba(255,113,206,0.06) 0%, transparent 50%, rgba(255,113,206,0.06) 100%);
   justify-content: flex-start; padding: 24px 20px; overflow-y: auto;
-  box-shadow: 0 0 30px rgba(212, 176, 106, 0.1);
+  box-shadow: 0 0 30px rgba(255, 113, 206, 0.1);
 }
 .flip-back .back-sign-symbol {
   font-size: 40px; margin-bottom: 4px;
@@ -262,7 +269,7 @@ body {
 .flip-back .back-dimension {
   margin-top: 12px; width: 100%;
   display: flex; align-items: center; gap: 8px;
-  padding: 6px 0; border-bottom: 1px solid rgba(212,176,106,0.1);
+  padding: 6px 0; border-bottom: 1px solid rgba(255,113,206,0.1);
 }
 .flip-back .back-dim:first-of-type { margin-top: 16px; }
 .flip-back .back-dim-label {
@@ -286,8 +293,8 @@ body {
 .daily-overview {
   text-align: center; margin: 32px 0 20px;
   padding: 16px 24px;
-  border-top: 1px solid rgba(212,176,106,0.08);
-  border-bottom: 1px solid rgba(212,176,106,0.08);
+  border-top: 1px solid rgba(255,113,206,0.08);
+  border-bottom: 1px solid rgba(255,113,206,0.08);
 }
 .daily-overview-label {
   font-size: 11px; color: var(--text-muted); letter-spacing: 3px; margin-bottom: 6px;
@@ -315,7 +322,7 @@ body {
 /* Tarot Card */
 .tarot-card {
   background: var(--bg-card);
-  border: 1px solid rgba(212,176,106,0.15);
+  border: 1px solid rgba(255,113,206,0.15);
   border-radius: var(--radius);
   padding: 20px 12px 16px;
   text-align: center;
@@ -333,11 +340,11 @@ body {
   border-color: var(--gold);
   background: var(--bg-card-hover);
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(212,176,106,0.1);
+  box-shadow: 0 8px 24px rgba(255,113,206,0.1);
 }
 .tarot-card.my-highlight {
   border-color: var(--gold);
-  box-shadow: 0 0 16px rgba(212,176,106,0.15);
+  box-shadow: 0 0 16px rgba(255,113,206,0.15);
 }
 .tarot-card .card-symbol {
   font-size: 36px; margin-bottom: 6px; position: relative; z-index: 1;
@@ -410,17 +417,17 @@ body {
   font-size: 13px; cursor: pointer; font-family: var(--font-body);
   transition: all 0.2s;
 }
-.btn-compare:hover { border-color: var(--cyan); background: rgba(77,208,209,0.08); }
-.btn-compare.active { border-color: var(--cyan); background: rgba(77,208,209,0.12); }
+.btn-compare:hover { border-color: var(--cyan); background: rgba(1,205,254,0.08); }
+.btn-compare.active { border-color: var(--cyan); background: rgba(1,205,254,0.12); }
 
 .detail-dims { display: flex; flex-direction: column; gap: 16px; }
 .dim-row {
   display: flex; align-items: flex-start; gap: 16px;
   padding: 14px 16px; background: var(--bg-card);
-  border-radius: var(--radius); border: 1px solid rgba(212,176,106,0.08);
+  border-radius: var(--radius); border: 1px solid rgba(255,113,206,0.08);
   transition: border-color 0.2s;
 }
-.dim-row:hover { border-color: rgba(212,176,106,0.2); }
+.dim-row:hover { border-color: rgba(255,113,206,0.2); }
 .dim-icon {
   font-size: 24px; width: 40px; text-align: center; flex-shrink: 0; opacity: 0.7;
 }
@@ -477,7 +484,7 @@ body {
 .compare-bar-row {
   display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
   padding: 8px 12px; background: var(--bg-card); border-radius: var(--radius);
-  border: 1px solid rgba(212,176,106,0.06);
+  border: 1px solid rgba(255,113,206,0.06);
 }
 .compare-bar-label { font-size: 12px; color: var(--text-secondary); width: 32px; flex-shrink: 0; }
 .compare-bar-track {
@@ -504,12 +511,12 @@ body {
   font-size: 13px; cursor: pointer; font-family: var(--font-body); margin-bottom: 16px;
   transition: all 0.2s;
 }
-.back-btn:hover { border-color: var(--gold); background: rgba(212,176,106,0.06); }
+.back-btn:hover { border-color: var(--gold); background: rgba(255,113,206,0.06); }
 
 /* Footer */
 .footer {
   text-align: center; margin-top: 48px; padding-top: 20px;
-  border-top: 1px solid rgba(212,176,106,0.06);
+  border-top: 1px solid rgba(255,113,206,0.06);
   font-size: 11px; color: var(--text-muted); letter-spacing: 1px;
 }
 
@@ -608,14 +615,14 @@ body {
  */
 let horoscopeData = null;
 
-/* ===== STARS BACKGROUND ===== */
+/* ===== VAPORWAVE BACKGROUND ===== */
 (function() {
   const canvas = document.getElementById('stars-canvas');
   const ctx = canvas.getContext('2d');
   let stars = [];
-  let orbitLines = [];
-  const STAR_COUNT = 180;
-  const ORBIT_COUNT = 6;
+  const STAR_COUNT = 130;
+  const HORIZON_RATIO = 0.62;
+  const NEON = ['255,113,206', '1,205,254', '185,103,255', '255,241,166'];
 
   function resize() {
     canvas.width = window.innerWidth;
@@ -628,65 +635,103 @@ let horoscopeData = null;
     for (let i = 0; i < STAR_COUNT; i++) {
       stars.push({
         x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 1.8 + 0.4,
+        y: Math.random() * canvas.height * HORIZON_RATIO,
+        r: Math.random() * 1.5 + 0.4,
         alpha: Math.random(),
-        speed: Math.random() * 0.008 + 0.003,
-        direction: Math.random() > 0.5 ? 1 : -1
-      });
-    }
-    orbitLines = [];
-    for (let i = 0; i < ORBIT_COUNT; i++) {
-      orbitLines.push({
-        cx: canvas.width * (0.15 + Math.random() * 0.7),
-        cy: canvas.height * (0.1 + Math.random() * 0.8),
-        rx: 80 + Math.random() * 200,
-        ry: 30 + Math.random() * 80,
-        alpha: 0.02 + Math.random() * 0.06,
-        phase: Math.random() * Math.PI * 2
+        speed: Math.random() * 0.012 + 0.004,
+        direction: Math.random() > 0.5 ? 1 : -1,
+        color: NEON[Math.floor(Math.random() * NEON.length)]
       });
     }
   }
 
-  function draw() {
+  function horizonY() { return canvas.height * HORIZON_RATIO; }
+
+  // 条纹落日：黄→粉→紫渐变 + 镂空条纹
+  function drawSun() {
+    const hy = horizonY();
+    const r = Math.min(canvas.width, canvas.height) * 0.17;
+    const cx = canvas.width / 2;
+    const cy = hy - r * 0.28;
+    const grad = ctx.createLinearGradient(0, cy - r, 0, cy + r);
+    grad.addColorStop(0, '#fff3a0');
+    grad.addColorStop(0.4, '#ffb86b');
+    grad.addColorStop(0.72, '#ff71ce');
+    grad.addColorStop(1, '#b967ff');
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,113,206,0.65)';
+    ctx.shadowBlur = 70;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+    // 镂空条纹（越往下越宽，露出底色）
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    let y = cy + r * 0.12;
+    let bar = 2, gap = 3;
+    while (y < cy + r) {
+      ctx.fillRect(cx - r - 2, y, r * 2 + 4, bar);
+      y += bar + gap;
+      bar *= 1.45;
+      gap += 1;
+    }
+    ctx.restore();
+    // 地平线辉光
+    const glow = ctx.createRadialGradient(cx, hy, 0, cx, hy, r * 3.2);
+    glow.addColorStop(0, 'rgba(255,113,206,0.20)');
+    glow.addColorStop(0.5, 'rgba(185,103,255,0.07)');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // 透视网格：水平线滚动 + 垂直线发散
+  function drawGrid(t) {
+    const hy = horizonY();
+    const h = canvas.height - hy;
+    ctx.strokeStyle = 'rgba(1,205,254,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, hy); ctx.lineTo(canvas.width, hy); ctx.stroke();
+    const ROWS = 16;
+    for (let i = 0; i < ROWS; i++) {
+      const z = ((i / ROWS) + t * 0.00006) % 1;
+      const y = hy + Math.pow(z, 2.4) * h;
+      const alpha = 0.04 + z * 0.3;
+      ctx.strokeStyle = 'rgba(1,205,254,' + alpha + ')';
+      ctx.lineWidth = z > 0.7 ? 1.2 : 0.6;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+    }
+    const COLS = 26;
+    for (let i = 0; i <= COLS; i++) {
+      const xb = (i / COLS) * canvas.width * 1.8 - canvas.width * 0.4;
+      const xt = canvas.width / 2 + (xb - canvas.width / 2) * 0.06;
+      ctx.strokeStyle = 'rgba(185,103,255,0.15)';
+      ctx.lineWidth = 0.6;
+      ctx.beginPath(); ctx.moveTo(xt, hy); ctx.lineTo(xb, canvas.height); ctx.stroke();
+    }
+  }
+
+  function draw(t) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    orbitLines.forEach(orbit => {
-      ctx.beginPath();
-      ctx.ellipse(orbit.cx, orbit.cy, orbit.rx, orbit.ry, 0, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(212,176,106,${orbit.alpha})`;
-      ctx.lineWidth = 0.5;
-      ctx.setLineDash([4, 20]);
-      ctx.lineDashOffset = Date.now() * 0.01 % 24;
-      ctx.stroke();
-      ctx.setLineDash([]);
-    });
-
     stars.forEach(star => {
       star.alpha += star.speed * star.direction;
       if (star.alpha > 1) { star.alpha = 1; star.direction = -1; }
       if (star.alpha < 0.1) { star.alpha = 0.1; star.direction = 1; }
-
       ctx.beginPath();
       ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-      const baseColor = star.r > 1.2 ? '212,176,106' : '180,200,220';
-      ctx.fillStyle = `rgba(${baseColor},${star.alpha})`;
+      ctx.fillStyle = 'rgba(' + star.color + ',' + (star.alpha * 0.9) + ')';
       ctx.fill();
-
-      if (star.r > 1.4 && star.alpha > 0.6) {
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.r * 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${baseColor},${star.alpha * 0.1})`;
-        ctx.fill();
-      }
     });
-
+    drawSun();
+    drawGrid(t || 0);
     requestAnimationFrame(draw);
   }
 
   resize();
   initStars();
-  draw();
+  draw(0);
 })();
 
 /* ===== APP LOGIC ===== */
@@ -1242,22 +1287,22 @@ function renderRadarChart() {
         {
           label: `${s1.symbol} ${s1.name}`,
           data: dims.map(d => s1[d].score),
-          borderColor: '#d4b06a',
-          backgroundColor: 'rgba(212,176,106,0.1)',
+          borderColor: '#ff71ce',
+          backgroundColor: 'rgba(255,113,206,0.1)',
           borderWidth: 1.5,
-          pointBackgroundColor: '#d4b06a',
-          pointBorderColor: '#d4b06a',
+          pointBackgroundColor: '#ff71ce',
+          pointBorderColor: '#ff71ce',
           pointRadius: 3,
           pointHoverRadius: 5,
         },
         {
           label: `${s2.symbol} ${s2.name}`,
           data: dims.map(d => s2[d].score),
-          borderColor: '#4dd0d1',
-          backgroundColor: 'rgba(77,208,209,0.1)',
+          borderColor: '#01cdfe',
+          backgroundColor: 'rgba(1,205,254,0.1)',
           borderWidth: 1.5,
-          pointBackgroundColor: '#4dd0d1',
-          pointBorderColor: '#4dd0d1',
+          pointBackgroundColor: '#01cdfe',
+          pointBorderColor: '#01cdfe',
           pointRadius: 3,
           pointHoverRadius: 5,
         }
@@ -1275,13 +1320,13 @@ function renderRadarChart() {
             display: false,
           },
           grid: {
-            color: 'rgba(212,176,106,0.1)',
+            color: 'rgba(255,113,206,0.1)',
           },
           angleLines: {
-            color: 'rgba(212,176,106,0.1)',
+            color: 'rgba(255,113,206,0.1)',
           },
           pointLabels: {
-            color: '#e4dfd0',
+            color: '#f3e9ff',
             font: { size: 12, family: 'var(--font-body)' },
           },
         }
@@ -1289,7 +1334,7 @@ function renderRadarChart() {
       plugins: {
         legend: {
           labels: {
-            color: '#9a968a',
+            color: '#b9a3e3',
             font: { size: 11, family: 'var(--font-body)' },
             padding: 16,
             usePointStyle: true,
