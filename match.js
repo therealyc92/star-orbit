@@ -16,6 +16,13 @@
     gemini: 'air', libra: 'air', aquarius: 'air',
     cancer: 'water', scorpio: 'water', pisces: 'water'
   };
+  /* 阴阳性：火/风为阳（主动外放），土/水为阴（内敛感受） */
+  var SIGN_POLARITY = {
+    aries: 'yang', leo: 'yang', sagittarius: 'yang',
+    gemini: 'yang', libra: 'yang', aquarius: 'yang',
+    taurus: 'yin', virgo: 'yin', capricorn: 'yin',
+    cancer: 'yin', scorpio: 'yin', pisces: 'yin'
+  };
   var SIGN_KEYS = ['aries','taurus','gemini','cancer','leo','virgo','libra','scorpio','sagittarius','capricorn','aquarius','pisces'];
 
   /* 元素对亲和基础分（key 按 fire < earth < air < water 排序） */
@@ -101,6 +108,33 @@
   };
   var SAME_TEXT = '另一个自己。优点加倍，缺点也加倍。相处省力，但要警惕一起钻进同一个牛角尖。';
 
+  /* 性别组合视角短评（ga-gb） */
+  var GENDER_BRIEF = {
+    'male-female': '他的行动力遇上她的感受力——经典的两性能量对话。关键在于他学会听情绪、她学会直接说需求，顺序对了就是互补天花板。',
+    'female-male': '她的主动配上他的内敛——现代版的角色反转。她不必收锋芒，他也不必硬充强势，舒服的关系从来不需要演"该有的样子"。',
+    'male-male': '两位男性之间的相处，少了性别角色的预设包袱，多了坦诚直给的痛快。激情和竞争心都可能偏高，记得把胜负欲留在赛场、把温柔留给彼此。',
+    'female-female': '两位女性之间的连接，情感密度天然偏高，共情力是双倍的礼物也是双倍的重量。彼此的敏感是默契的来源，但也别让情绪共振成一个漩涡——留一个理性的锚。'
+  };
+
+  /* 阴阳配位 × 性别的能量流动描述（key: polarityA-genderA_polarityB-genderB，查表时双向匹配） */
+  var POLARITY_NOTE = {
+    'yang-male_yin-female': '他（阳性星座）外放主动、她（阴性星座）内敛感受——能量一外一内自然咬合，他带她出门看世界，她给他一个想回来的家。',
+    'yin-male_yang-female': '他（阴性星座）沉静细腻、她（阳性星座）明亮果敢——他提供稳的底座，她负责点燃光芒，谁说主角必须是谁？',
+    'yang-male_yang-female': '他冲她也冲——两个人都自带引擎。激情拉满，但谁来踩刹车？争主导权是日常功课，学会"轮流当主角"就不怕熄火。',
+    'yin-male_yin-female': '他静她也静——两个内敛者的世界很私密很安全，但容易闷。需要有人主动捅破沉默那层纸，制造一点"不舒服"的坦诚。',
+    'yang-male_yang-male': '两位阳性星座的男性——行动力叠加，惺惺相惜也容易硬碰硬。把竞争变成共同目标上的并肩，而不是关系里的暗较劲。',
+    'yin-male_yin-male': '两位阴性星座的男性——都不爱把话说满，默契靠时间养。慢热但深，记得别让"我都懂"变成"谁都没说"。',
+    'yang-female_yang-female': '两位阳性星座的女性——两个都飒都敢。互相成就大于互相竞争时这段关系就是火箭燃料，别让比较心偷走欣赏。',
+    'yin-female_yin-female': '两位阴性星座的女性——感受力叠加，彼此是最好的容器。但情绪容易一起沉，约定一个"谁先好起来谁当岸"的规则。',
+    'yang-male_yin-male': '他外放他内敛——一动一静天然互补，但外放的那个别用音量盖过对方没说出口的话。',
+    'yang-female_yin-female': '她飒她柔——一个带风一个给港湾，但飒的那个也需要被接住，柔的那个也有底线。'
+  };
+
+  function polarityKey(sign, gender) {
+    if (!gender) return null;
+    return SIGN_POLARITY[sign] + '-' + gender;
+  }
+
   function hashCode(str) {
     var h = 2166136261;
     for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
@@ -124,7 +158,17 @@
     return '相爱相杀';
   }
 
-  function scoreOf(a, b) {
+  /* 阳性星座+男 / 阴性星座+女 = 能量顺势(+1)；反之为能量反差(-1) */
+  function polarityMod(sign, gender) {
+    if (!gender) return 0;
+    var pol = SIGN_POLARITY[sign];
+    if ((pol === 'yang' && gender === 'male') || (pol === 'yin' && gender === 'female')) return 1;
+    return -1;
+  }
+
+  function scoreOf(a, b, ga, gb) {
+    ga = ga || null;
+    gb = gb || null;
     var ea = SIGN_ELEMENT[a], eb = SIGN_ELEMENT[b];
     var pk = pairKey(ea, eb);
     var base = ELEMENT_BASE[pk];
@@ -133,22 +177,34 @@
     if (same) base += 3;
     if (opposite) base += 5;
 
+    // 阴阳配位微调：合计 -2..+2
+    var polMod = polarityMod(a, ga) + polarityMod(b, gb);
+
     // 确定性微调 ±3
     var jitter = (hashCode(sortedPair(a, b)) % 7) - 3;
-    var total = clamp(base + jitter);
+    var total = clamp(base + jitter + polMod);
 
     var elems = same ? [ea] : [ea, eb];
     function has(e) { return elems.indexOf(e) >= 0; }
     function jit(dim) { return (hashCode(sortedPair(a, b) + '|' + dim) % 9) - 4; }
 
     var dims = {
-      love:    clamp(base + (has('water') ? 5 : 0) + (has('fire') ? 2 : 0) + jit('love')),
+      love:    clamp(base + (has('water') ? 5 : 0) + (has('fire') ? 2 : 0) + jit('love') + polMod),
       comm:    clamp(base + (has('air') ? 7 : 0) + jit('comm')),
-      stable:  clamp(base + (has('earth') ? 7 : 0) + jit('stable')),
-      passion: clamp(base + (has('fire') ? 7 : 0) + jit('passion'))
+      stable:  clamp(base + (has('earth') ? 7 : 0) + jit('stable') + polMod),
+      passion: clamp(base + (has('fire') ? 7 : 0) + jit('passion') - polMod)
     };
 
     var text = PAIR_TEXT[pk];
+    // 性别视角短评
+    var genderBrief = (ga && gb) ? GENDER_BRIEF[ga + '-' + gb] : null;
+    // 阴阳配位能量描述（双向匹配）
+    var polarityNote = null;
+    if (ga && gb) {
+      var ka = SIGN_POLARITY[a] + '-' + ga;
+      var kb = SIGN_POLARITY[b] + '-' + gb;
+      polarityNote = POLARITY_NOTE[ka + '_' + kb] || POLARITY_NOTE[kb + '_' + ka] || null;
+    }
     return {
       total: total,
       label: labelFor(total),
@@ -159,9 +215,11 @@
       challenge: text.challenge,
       advice: text.advice,
       tag: same ? '同星座' : (opposite ? '对宫组合' : null),
-      extra: same ? SAME_TEXT : (opposite ? OPPOSITE_TEXT[sortedPair(a, b)] : null)
+      extra: same ? SAME_TEXT : (opposite ? OPPOSITE_TEXT[sortedPair(a, b)] : null),
+      genderBrief: genderBrief,
+      polarityNote: polarityNote
     };
   }
 
-  return { scoreOf: scoreOf, SIGN_ELEMENT: SIGN_ELEMENT };
+  return { scoreOf: scoreOf, SIGN_ELEMENT: SIGN_ELEMENT, SIGN_POLARITY: SIGN_POLARITY };
 }));

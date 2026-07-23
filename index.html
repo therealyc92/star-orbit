@@ -86,6 +86,16 @@ body::after {
   transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center;
 }
 .match-swap:hover { background: var(--cyan); color: var(--bg-deep); transform: rotate(180deg); }
+.match-side { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.match-gender { display: flex; gap: 5px; }
+.gender-btn {
+  width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,113,206,0.2);
+  background: transparent; color: var(--text-muted); cursor: pointer; font-size: 15px;
+  transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; line-height: 1;
+}
+.gender-btn:hover { border-color: var(--gold); color: var(--gold); }
+.gender-btn.active { color: var(--bg-deep); border-color: var(--gold); background: var(--gold); box-shadow: 0 0 10px rgba(255,113,206,0.4); }
+.gender-btn[data-g="female"].active { border-color: var(--cyan); background: var(--cyan); box-shadow: 0 0 10px rgba(1,205,254,0.4); }
 .match-card {
   background: var(--bg-card); border: 1px solid rgba(255,113,206,0.18);
   border-radius: var(--radius-lg); padding: 28px 24px;
@@ -666,9 +676,21 @@ body::after {
   <div class="match-section">
     <div class="match-section-label">星 座 配 对</div>
     <div class="match-picker">
-      <select class="match-select" id="match-a" aria-label="星座 A"></select>
+      <div class="match-side">
+        <select class="match-select" id="match-a" aria-label="星座 A"></select>
+        <div class="match-gender" id="match-gender-a" data-gender="male">
+          <button class="gender-btn active" data-g="male" title="男性">♂</button>
+          <button class="gender-btn" data-g="female" title="女性">♀</button>
+        </div>
+      </div>
       <button class="match-swap" id="match-swap" title="交换双方">⇄</button>
-      <select class="match-select" id="match-b" aria-label="星座 B"></select>
+      <div class="match-side">
+        <select class="match-select" id="match-b" aria-label="星座 B"></select>
+        <div class="match-gender" id="match-gender-b" data-gender="female">
+          <button class="gender-btn active" data-g="male" title="男性">♂</button>
+          <button class="gender-btn" data-g="female" title="女性">♀</button>
+        </div>
+      </div>
     </div>
     <div class="match-result" id="match-result"></div>
   </div>
@@ -1434,9 +1456,11 @@ document.addEventListener('keydown', (e) => {
 function renderMatch() {
   const a = document.getElementById('match-a').value;
   const b = document.getElementById('match-b').value;
+  const ga = document.getElementById('match-gender-a').dataset.gender;
+  const gb = document.getElementById('match-gender-b').dataset.gender;
   const meta = HoroscopeGenerator.SIGN_META;
   const sa = meta[a], sb = meta[b];
-  const r = SIGN_MATCH.scoreOf(a, b);
+  const r = SIGN_MATCH.scoreOf(a, b, ga, gb);
   const dims = [
     { label: '爱情指数', value: r.dims.love },
     { label: '沟通默契', value: r.dims.comm },
@@ -1463,6 +1487,12 @@ function renderMatch() {
   if (r.extra) {
     html += '<div class="match-text-block"><div class="match-text-title">' + r.tag + '备注</div><div class="match-text-body">' + r.extra + '</div></div>';
   }
+  if (r.genderBrief) {
+    html += '<div class="match-text-block"><div class="match-text-title">性别视角</div><div class="match-text-body">' + r.genderBrief + '</div></div>';
+  }
+  if (r.polarityNote) {
+    html += '<div class="match-text-block"><div class="match-text-title">能量流动</div><div class="match-text-body">' + r.polarityNote + '</div></div>';
+  }
   html += '</div></div>';
   document.getElementById('match-result').innerHTML = html;
 }
@@ -1485,8 +1515,27 @@ function renderMatch() {
   };
   selA.addEventListener('change', onChange);
   selB.addEventListener('change', onChange);
+  // 性别切换
+  ['match-gender-a','match-gender-b'].forEach(function(id) {
+    var box = document.getElementById(id);
+    box.querySelectorAll('.gender-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        box.querySelectorAll('.gender-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        box.dataset.gender = btn.dataset.g;
+        trackEvent('match_gender', { side: id, gender: btn.dataset.g });
+        renderMatch();
+      });
+    });
+  });
   document.getElementById('match-swap').addEventListener('click', () => {
     const tmp = selA.value; selA.value = selB.value; selB.value = tmp;
+    // 交换性别
+    const ga = document.getElementById('match-gender-a');
+    const gb = document.getElementById('match-gender-b');
+    const tmpG = ga.dataset.gender; ga.dataset.gender = gb.dataset.gender; gb.dataset.gender = tmpG;
+    ga.querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('active', b.dataset.g === ga.dataset.gender));
+    gb.querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('active', b.dataset.g === gb.dataset.gender));
     trackEvent('match_swap', {});
     renderMatch();
   });
