@@ -84,6 +84,23 @@ body {
   font-style: italic; max-width: 520px; margin-left: auto; margin-right: auto; line-height: 1.6;
 }
 
+/* Date Nav */
+.date-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+.date-nav-btn {
+  background: transparent; border: 1px solid var(--gold-dim); color: var(--gold);
+  width: 24px; height: 24px; border-radius: 50%; cursor: pointer; padding: 0;
+  font-size: 14px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.2s; font-family: var(--font-body);
+}
+.date-nav-btn:hover { background: var(--gold); color: var(--bg-deep); border-color: var(--gold); }
+.date-nav .header-date { margin-top: 0; cursor: default; }
+.back-today {
+  display: none; font-size: 11px; color: var(--gold); border: 1px solid var(--gold-dim);
+  border-radius: 10px; padding: 1px 8px; cursor: pointer; letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.back-today:hover { background: var(--gold); color: var(--bg-deep); }
+
 /* My Sign Selector */
 .my-sign-bar {
   display: flex; align-items: center; justify-content: center; gap: 12px;
@@ -519,7 +536,12 @@ body {
   <!-- Header -->
   <header class="header">
     <h1 class="header-title">星 轨 运 势</h1>
-    <div class="header-date" id="date-display"></div>
+    <div class="date-nav">
+      <button class="date-nav-btn" id="date-prev" aria-label="前一天" title="前一天">&#8249;</button>
+      <div class="header-date" id="date-display"></div>
+      <span class="back-today" id="back-today">回到今日</span>
+      <button class="date-nav-btn" id="date-next" aria-label="后一天" title="后一天">&#8250;</button>
+    </div>
     <div class="header-orbit" id="overview-text"></div>
   </header>
 
@@ -551,7 +573,7 @@ body {
             <div class="card-star">✦</div>
           </div>
         </div>
-        <div class="card-hint">触碰揭示今日运势</div>
+        <div class="card-hint" id="flip-hint">触碰揭示今日运势</div>
       </div>
       <div class="flip-back" id="flip-back-content"></div>
     </div>
@@ -865,23 +887,39 @@ function renderZodiacGrid() {
   grid.innerHTML = html;
 }
 
-// Init: 动态日期 + 按日期加载数据（精修数据优先，生成器兜底）
+// Init: 动态日期 + 按日期加载数据（精修数据优先，生成器兜底）+ 日期导航
 function pad2(n) { return String(n).padStart(2, '0'); }
-function todayStr() {
-  const d = new Date();
+function toDateStr(d) {
   return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
 }
+function todayStr() { return toDateStr(new Date()); }
 const WEEKDAYS_CN = ['日', '一', '二', '三', '四', '五', '六'];
-function todayDisplay() {
-  const d = new Date();
-  return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 · 星期' + WEEKDAYS_CN[d.getDay()];
+function displayFor(dateStr) {
+  const parts = dateStr.split('-').map(Number);
+  const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+  return parts[0] + '年' + parts[1] + '月' + parts[2] + '日 · 星期' + WEEKDAYS_CN[dt.getDay()];
 }
 
-function initApp(data) {
+let currentDateStr = null;
+
+function initApp(data, dateStr) {
   horoscopeData = data;
-  document.getElementById('date-display').textContent = todayDisplay();
+  currentDateStr = dateStr;
+  const isToday = (dateStr === todayStr());
+  document.getElementById('date-display').textContent = displayFor(dateStr);
   document.getElementById('overview-text').textContent = data.overview;
   document.getElementById('daily-overview-detail').textContent = data.overview;
+  document.getElementById('back-today').style.display = isToday ? 'none' : 'inline-block';
+  document.getElementById('flip-hint').textContent = isToday ? '触碰揭示今日运势' : '触碰揭示当日运势';
+  // 切换日期时关闭可能打开的详情面板并重置对比状态
+  detailSignKey = null;
+  compareSignKey = null;
+  document.getElementById('detail-overlay').classList.remove('open');
+  // URL hash 同步（今日则清除 hash）
+  const targetHash = isToday ? '' : '#d=' + dateStr;
+  if (location.hash !== targetHash) {
+    history.replaceState(null, '', location.pathname + targetHash);
+  }
   if (mySign) {
     updateMySignDisplay(mySign);
   } else {
@@ -889,17 +927,38 @@ function initApp(data) {
   }
 }
 
-(function loadDaily() {
-  const ds = todayStr();
-  const fallback = () => initApp(HoroscopeGenerator.generateDaily(ds));
+function loadDaily(dateStr) {
+  window.HOROSCOPE_OVERRIDE = undefined; // 清除上一日期残留，防止串数据
+  const fallback = () => initApp(HoroscopeGenerator.generateDaily(dateStr), dateStr);
   const s = document.createElement('script');
-  s.src = 'data/' + ds + '.js';
-  s.onload = () => { window.HOROSCOPE_OVERRIDE ? initApp(window.HOROSCOPE_OVERRIDE) : fallback(); };
+  s.src = 'data/' + dateStr + '.js';
+  s.onload = () => {
+    const d = window.HOROSCOPE_OVERRIDE;
+    (d && d.date === dateStr) ? initApp(d, dateStr) : fallback();
+  };
   s.onerror = fallback;
   document.head.appendChild(s);
-  // 页面彻夜未关时，跨日自动刷新获取新运势
-  setInterval(() => { if (todayStr() !== ds) location.reload(); }, 60000);
-})();
+}
+
+function shiftDate(delta) {
+  const parts = currentDateStr.split('-').map(Number);
+  const dt = new Date(parts[0], parts[1] - 1, parts[2] + delta);
+  loadDaily(toDateStr(dt));
+}
+
+document.getElementById('date-prev').addEventListener('click', () => shiftDate(-1));
+document.getElementById('date-next').addEventListener('click', () => shiftDate(1));
+document.getElementById('back-today').addEventListener('click', () => loadDaily(todayStr()));
+
+// 启动：支持 #d=YYYY-MM-DD 直达
+const hashMatch = location.hash.match(/#d=(\d{4}-\d{2}-\d{2})/);
+loadDaily(hashMatch ? hashMatch[1] : todayStr());
+
+// 停留在今日视图且跨天时，自动加载新一天
+setInterval(() => {
+  const now = todayStr();
+  if (currentDateStr && !location.hash && currentDateStr !== now) loadDaily(now);
+}, 60000);
 
 /* ===== Detail Panel ===== */
 let detailSignKey = null;
