@@ -63,6 +63,73 @@ body::after {
   opacity: 0.55;
 }
 
+/* Match Section（星座配对） */
+.match-section { margin-top: 36px; }
+.match-section-label {
+  text-align: center; font-size: 12px; letter-spacing: 4px;
+  color: var(--gold); margin-bottom: 16px;
+  text-shadow: 0 0 12px rgba(255,113,206,0.4);
+}
+.match-picker { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; }
+.match-select {
+  background: var(--bg-card); color: var(--text-primary);
+  border: 1px solid rgba(255,113,206,0.25); border-radius: var(--radius);
+  padding: 10px 14px; font-size: 14px; font-family: var(--font-body);
+  cursor: pointer; outline: none; transition: all 0.2s;
+}
+.match-select:hover, .match-select:focus {
+  border-color: var(--gold); box-shadow: 0 0 12px rgba(255,113,206,0.25);
+}
+.match-swap {
+  background: transparent; border: 1px solid var(--cyan-dim); color: var(--cyan);
+  width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 16px;
+  transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center;
+}
+.match-swap:hover { background: var(--cyan); color: var(--bg-deep); transform: rotate(180deg); }
+.match-card {
+  background: var(--bg-card); border: 1px solid rgba(255,113,206,0.18);
+  border-radius: var(--radius-lg); padding: 28px 24px;
+  box-shadow: 0 0 24px rgba(255,113,206,0.08);
+}
+.match-pair { text-align: center; font-size: 40px; }
+.match-sym { color: var(--gold); text-shadow: 0 0 20px rgba(255,113,206,0.5); }
+.match-sym.cyan { color: var(--cyan); text-shadow: 0 0 20px rgba(1,205,254,0.5); }
+.match-x { color: var(--text-muted); font-size: 24px; margin: 0 16px; vertical-align: 8px; }
+.match-names { text-align: center; font-size: 15px; margin-top: 6px; color: var(--text-primary); }
+.match-tag {
+  display: inline-block; margin-left: 8px; font-size: 10px; color: var(--cyan);
+  border: 1px solid var(--cyan-dim); border-radius: 10px; padding: 1px 8px;
+  letter-spacing: 1px; vertical-align: 2px;
+}
+.match-title { text-align: center; font-size: 12px; color: var(--text-secondary); letter-spacing: 3px; margin-top: 4px; }
+.match-score {
+  font-family: var(--font-display); font-size: 60px; text-align: center; line-height: 1.1;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--purple) 50%, var(--cyan) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 18px rgba(255,113,206,0.4));
+  margin-top: 8px;
+}
+.match-label { text-align: center; font-size: 13px; color: var(--gold-light); letter-spacing: 2px; }
+.match-dims { margin-top: 20px; }
+.match-dim-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.match-dim-label { width: 60px; font-size: 12px; color: var(--text-secondary); text-align: right; }
+.match-dim-track {
+  flex: 1; height: 6px; background: rgba(255,255,255,0.06);
+  border-radius: 3px; overflow: hidden;
+}
+.match-dim-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--cyan));
+  box-shadow: 0 0 8px rgba(255,113,206,0.4);
+  transition: width 0.6s ease;
+}
+.match-dim-num { width: 26px; font-size: 12px; color: var(--cyan); }
+.match-texts { margin-top: 20px; border-top: 1px solid rgba(255,113,206,0.12); padding-top: 16px; }
+.match-text-block { margin-bottom: 14px; }
+.match-text-block:last-child { margin-bottom: 0; }
+.match-text-title { font-size: 12px; color: var(--gold); letter-spacing: 2px; margin-bottom: 4px; }
+.match-text-body { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
 .container {
   position: relative; z-index: 1;
   max-width: 1200px; margin: 0 auto; padding: 20px 24px 60px;
@@ -595,6 +662,17 @@ body::after {
   <!-- Zodiac Grid -->
   <div class="zodiac-grid" id="zodiac-grid"></div>
 
+  <!-- Match Section -->
+  <div class="match-section">
+    <div class="match-section-label">星 座 配 对</div>
+    <div class="match-picker">
+      <select class="match-select" id="match-a" aria-label="星座 A"></select>
+      <button class="match-swap" id="match-swap" title="交换双方">⇄</button>
+      <select class="match-select" id="match-b" aria-label="星座 B"></select>
+    </div>
+    <div class="match-result" id="match-result"></div>
+  </div>
+
   <!-- Footer -->
   <footer class="footer">
     星轨运势 · 每日星座指南 · 内容仅供生活参考
@@ -607,6 +685,7 @@ body::after {
 </div>
 
 <script src="generator.js"></script>
+<script src="match.js"></script>
 <script>
 /* ===== DATA LOADING =====
  * 数据源优先级：
@@ -1349,6 +1428,69 @@ function renderRadarChart() {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeDetail();
 });
+
+/* ===== Match（星座配对） ===== */
+function renderMatch() {
+  const a = document.getElementById('match-a').value;
+  const b = document.getElementById('match-b').value;
+  const meta = HoroscopeGenerator.SIGN_META;
+  const sa = meta[a], sb = meta[b];
+  const r = SIGN_MATCH.scoreOf(a, b);
+  const dims = [
+    { label: '爱情指数', value: r.dims.love },
+    { label: '沟通默契', value: r.dims.comm },
+    { label: '稳定长久', value: r.dims.stable },
+    { label: '激情火花', value: r.dims.passion }
+  ];
+  let html = '<div class="match-card">' +
+    '<div class="match-pair"><span class="match-sym">' + sa.symbol + '</span><span class="match-x">×</span><span class="match-sym cyan">' + sb.symbol + '</span></div>' +
+    '<div class="match-names">' + sa.name + ' × ' + sb.name + (r.tag ? '<span class="match-tag">' + r.tag + '</span>' : '') + '</div>' +
+    '<div class="match-title">' + r.title + '</div>' +
+    '<div class="match-score">' + r.total + '</div>' +
+    '<div class="match-label">' + r.label + ' · ' + '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars) + '</div>' +
+    '<div class="match-dims">';
+  dims.forEach(d => {
+    html += '<div class="match-dim-row">' +
+      '<span class="match-dim-label">' + d.label + '</span>' +
+      '<div class="match-dim-track"><div class="match-dim-fill" style="width:' + d.value + '%"></div></div>' +
+      '<span class="match-dim-num">' + d.value + '</span></div>';
+  });
+  html += '</div><div class="match-texts">' +
+    '<div class="match-text-block"><div class="match-text-title">优势</div><div class="match-text-body">' + r.strength + '</div></div>' +
+    '<div class="match-text-block"><div class="match-text-title">挑战</div><div class="match-text-body">' + r.challenge + '</div></div>' +
+    '<div class="match-text-block"><div class="match-text-title">建议</div><div class="match-text-body">' + r.advice + '</div></div>';
+  if (r.extra) {
+    html += '<div class="match-text-block"><div class="match-text-title">' + r.tag + '备注</div><div class="match-text-body">' + r.extra + '</div></div>';
+  }
+  html += '</div></div>';
+  document.getElementById('match-result').innerHTML = html;
+}
+
+(function initMatch() {
+  const meta = HoroscopeGenerator.SIGN_META;
+  const selA = document.getElementById('match-a');
+  const selB = document.getElementById('match-b');
+  signKeys.forEach(k => {
+    const s = meta[k];
+    const opt = '<option value="' + k + '">' + s.symbol + ' ' + s.name + '</option>';
+    selA.insertAdjacentHTML('beforeend', opt);
+    selB.insertAdjacentHTML('beforeend', opt);
+  });
+  selA.value = mySign || 'leo';
+  selB.value = (mySign && mySign !== 'libra') ? 'libra' : 'aries';
+  const onChange = () => {
+    trackEvent('match_view', { sign_a: selA.value, sign_b: selB.value });
+    renderMatch();
+  };
+  selA.addEventListener('change', onChange);
+  selB.addEventListener('change', onChange);
+  document.getElementById('match-swap').addEventListener('click', () => {
+    const tmp = selA.value; selA.value = selB.value; selB.value = tmp;
+    trackEvent('match_swap', {});
+    renderMatch();
+  });
+  renderMatch();
+})();
 </script>
 </body>
 </html>
