@@ -16,6 +16,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+require('../pool-extra.js'); // 先加载扩容文案池
 const { generateDaily, SIGN_META } = require('../generator.js');
 
 const dateStr = process.argv[2] ||

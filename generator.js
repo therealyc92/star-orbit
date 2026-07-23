@@ -374,6 +374,28 @@
     }
   };
 
+  /* ===== 合并外部扩容文案池（pool-extra.js）=====
+   * 若全局已加载 EXTRA_POOL / EXTRA_OVERVIEWS，自动追加到文案池。
+   * pool-extra.js 须在本文件之前加载（浏览器：<script> 顺序；Node：先 require）。
+   */
+  var G = (typeof globalThis !== 'undefined') ? globalThis
+        : (typeof self !== 'undefined') ? self
+        : (typeof global !== 'undefined') ? global : this;
+  if (G.EXTRA_POOL) {
+    Object.keys(G.EXTRA_POOL).forEach(function (sign) {
+      var ep = G.EXTRA_POOL[sign];
+      if (!POOL[sign]) return;
+      Object.keys(ep).forEach(function (dim) {
+        if (POOL[sign][dim] && Array.isArray(ep[dim])) {
+          POOL[sign][dim] = POOL[sign][dim].concat(ep[dim]);
+        }
+      });
+    });
+  }
+  if (G.EXTRA_OVERVIEWS && Array.isArray(G.EXTRA_OVERVIEWS)) {
+    OVERVIEWS = OVERVIEWS.concat(G.EXTRA_OVERVIEWS);
+  }
+
   /* ===== 幸运色池 ===== */
   var LUCKY_COLORS = [
     '绯红', '赤橙', '金色', '琥珀', '明黄', '墨绿', '翠绿', '湖蓝',
